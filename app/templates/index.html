@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+<html lang="en">
+<head>
+    {% block head_base %}
+	 {{ super() }}
+	  
+	{% endblock %}	
+
+</head>
+
+<body>
+{% block content %}
+
+<div id="top_line">
+<div>
+{% if  safah is divisibleby 2 %}
+		
+<div class="grid grid-cols-3 gap-0">
+<div id="firstDiv">
+{% include 'card.html' %}
+</div>
+<div id="secondDiv" class="col-span-2">
+{% include 'main.html' %}
+</div>
+</div>
+{% else %}
+
+<div class="grid grid-cols-3 gap-0">
+<div id="secondDiv" class="col-span-2">
+{% include 'main.html' %}
+</div>
+<div id="firstDiv">
+{% include 'card.html' %}
+</div>
+</div>
+{% endif %}
+</div>
+<div id="bottom_line">
+
+
+<script> 
+  safah_dic = {{safah_dic|safe}} ;
+  ayah_dic = {{ayah_dic|safe}} ;
+  parts_dic =  {{parts_dic|safe}} ;	 
+  to_repeat = {{to_repeat|safe}} ;	 
+
+  const img = document.getElementById("ayahImage"); 
+  const coordsTextarea = document.getElementById("coords"); 
+  const QuranParts = {{QuranParts|safe}} ;
+  let surah = {{surah|int}} ;
+  const base_surah = surah;
+  let ayah_count = {{ayahCount|int}} ;
+  let surah_ayah_count =  {{ayahCount}}[surah-1] ;
+  let repeat = {{repeat|int}};
+  let selection_count = {{selection_count|int}};
+  let ayah_repeat = {{ayah_repeat|int}};
+  let = flipper = {{safah}} ;
+  let scroller = 1 ;
+  let audio; 
+  
+  let audioPointer = 0;
+  const  url = to_repeat[0]['url']; // let us retrieve ayah url from pos 0
+  audioPointer += 1; // now it points to first ayah
+  
+  function playNext() { 
+ 
+    //for (const key of Object.keys(to_repeat)) {
+	 audioLength = to_repeat.length;
+	 	
+	 if (audioPointer < audioLength) {
+	
+	    audio_url = url + to_repeat[audioPointer]['audio'] ;
+		audio = new Audio(audio_url); 
+	    audio.addEventListener("ended", playNext); 
+	    audio.play();
+	    
+		ayahID = to_repeat[audioPointer]['ayahID'] ;
+		coordsTextarea.value = ayahID ;
+	    page  = ayah_dic[ayahID]['page'] ;
+	    
+	    scroller = ayah_dic[ayahID]['scroll'] ;
+		scrollMe(scroller);
+					
+ 
+		window.gPagePath =  "https://cdn.tarteel.net/ayat/N1/img/T2/02/" + page + ".jpg" ; //maa it works amazingly
+		window.gData = safah_dic[page];
+		window.gValues = {{values}};
+		reorderDiv(page);
+	 
+	   onRefreshPress();
+	   audioPointer +=1;
+	 
+	} 
+	
+	
+  
+  
+  }
+		 
+  function onStart() { 
+    if (audio) { 
+      audio.pause(); 
+    } 
+    console.log("start"); 
+    playNext(); 
+  } 
+  
+     		 
+  const startButton = document.getElementById("startButton"); 
+  startButton.addEventListener("click", onStart); 
+  
+   
+  const reloadCss = () => {
+	 const links = document.getElementsByTagName("link");
+	  for (const link of links) {
+
+		if (link.rel === "stylesheet") {
+				if (link.href === "{{STATIC_URL}}css/tailwind-left.css") {
+						link.href = "{{STATIC_URL}}css/tailwind-right.css";
+				} else if (link.href === "{{STATIC_URL}}css/tailwind-right.css") {
+						link.href = "{{STATIC_URL}}css/tailwind-left.css";
+				}
+		 }
+	   }
+	};
+	
+	
+  function reorderDiv(flipper) {
+      if (flipper % 2 == 0) {
+	  document.getElementById("firstDiv").style.order = "1";
+	  document.getElementById("secondDiv").style.order = "2";
+	  document.getElementById("myCanvas").style = "border:1px solid #c3c3c3; float:left";
+	  } else {
+	   document.getElementById("firstDiv").style.order = "2";
+	   document.getElementById("secondDiv").style.order = "1";
+	   document.getElementById("myCanvas").style = "border:1px solid #c3c3c3; float:right";
+	  
+	  }
+     }
+	 
+	 function scrollMe(doit) {
+	     //alert(half, count, half >= count/2);
+	     if (doit === 0 ){
+		 const bottomDiv = document.getElementById("top_line");
+		 bottomDiv.scrollIntoView();
+		 } else if (doit === 1 ){
+		 //const bottomDiv = document.getElementById("bottom_line");
+		 //bottomDiv.scrollIntoView();
+		 //alert( "Width: " + w + "<br>Height: " + h);
+		 let w = innerWidth;
+         let h = innerHeight;
+		 if( h >= 760) {
+         	 window.scrollTo(0,290);
+			 }
+		 else {
+			 window.scrollTo(0,400);
+			} 
+		 }
+		 
+
+	 }
+  
+    
+	 
+
+    function fnSurahSelected() {
+     	 
+	var valueSelected = document.getElementById("surahlist").value ;
+    document.getElementById("surah").value = valueSelected ;
+	document.getElementById("ayah").value = '1' ;
+	document.getElementById("to_ayah").value = {{ayahCount}}[valueSelected-1] ;
+	document.getElementById("to_surah").value = valueSelected ;
+	
+    }
+	
+	function fnSurahNumSelected() {
+     	 
+	var valueSelected = (parseInt(document.getElementById("surah").value) ).toString() ;
+    document.getElementById("surahlist").value = valueSelected ;
+	valueSelected_1 = (parseInt(valueSelected) -1).toString();
+	document.getElementById("ayah").value = '1'  ;
+	document.getElementById("to_ayah").value = {{ayahCount}}[valueSelected_1]  ;
+	
+    }
+	
+	function fnPartChanged() {
+   
+	var partSelected = parseInt(document.getElementById("partlist").value) ;
+	//alert(valueSelected);
+    //document.getElementById("quarterlist").value = '1' ;
+	document.getElementById("quran_part").innerHTML =  'الجزء: ' + QuranParts[partSelected] ;
+
+
+	document.getElementById("ayah").value = parts_dic[partSelected]['hezb1']['q1']['from_ayah']  ;
+	document.getElementById("surah").value = parts_dic[partSelected]['hezb1']['q1']['from_surah']  ;
+	
+	document.getElementById("to_ayah").value = parts_dic[partSelected]['hezb2']['q4']['to_ayah']  ;
+	document.getElementById("to_surah").value = parts_dic[partSelected]['hezb2']['q4']['to_surah']  ;
+	
+	
+    }
+	
+	function fnHezbChanged() {
+		var partSelected = parseInt(document.getElementById("partlist").value)
+		var hezbSelected = parseInt(document.getElementById("hezblist").value) ;
+		document.getElementById("quran_hezb").innerHTML =  'الحزب: ' + QuranParts[hezbSelected] ;
+
+		if (hezbSelected == 1) {
+			document.getElementById("ayah").value = parts_dic[partSelected]['hezb1']['q1']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected]['hezb1']['q1']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected]['hezb1']['q4']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected]['hezb1']['q4']['to_surah']  ;
+		}
+		
+		else if (hezbSelected == 2) {
+			document.getElementById("ayah").value = parts_dic[partSelected]['hezb2']['q1']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected]['hezb2']['q1']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected]['hezb2']['q4']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected]['hezb2']['q4']['to_surah']  ;
+		}
+		
+		else if (hezbSelected == 0) {
+			document.getElementById("ayah").value = parts_dic[partSelected]['hezb1']['q1']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected]['hezb1']['q1']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected]['hezb2']['q4']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected]['hezb2']['q4']['to_surah']  ;
+		}
+	
+	
+    }
+	
+	
+	function fnQuarterChanged() {
+	
+		let hezb = 'hezb1'  ;
+		var partSelected = parseInt(document.getElementById("partlist").value)
+		var hezbSelected = parseInt(document.getElementById("hezblist").value) ;
+		var quarterSelected = parseInt(document.getElementById("quarterlist").value) ;
+		
+		document.getElementById("quran_quarter").innerHTML =  'الربع: ' + QuranParts[quarterSelected] ;
+		
+		if (hezbSelected == 1) {
+			hezb = 'hezb1' ;
+		} else if (hezbSelected == 2) {
+			hezb = 'hezb2' ;
+			}
+      
+		if (quarterSelected == 1) {
+			document.getElementById("ayah").value = parts_dic[partSelected][hezb]['q1']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected][hezb]['q1']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected][hezb]['q1']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected][hezb]['q1']['to_surah']  ;
+		}
+		
+		else if (quarterSelected == 2) {
+			document.getElementById("ayah").value = parts_dic[partSelected][hezb]['q2']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected][hezb]['q2']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected][hezb]['q2']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected][hezb]['q2']['to_surah']  ;
+		}
+		
+		else if (quarterSelected == 3) {
+			document.getElementById("ayah").value = parts_dic[partSelected][hezb]['q3']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected][hezb]['q3']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected][hezb]['q3']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected][hezb]['q3']['to_surah']  ;
+		}
+		
+		else if (quarterSelected == 4) {
+			document.getElementById("ayah").value = parts_dic[partSelected][hezb]['q4']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected][hezb]['q4']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected][hezb]['q4']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected][hezb]['q4']['to_surah']  ;
+		}
+		
+		
+		else if (quarterSelected == 0) {
+			document.getElementById("ayah").value = parts_dic[partSelected][hezb]['q1']['from_ayah']  ;
+			document.getElementById("surah").value = parts_dic[partSelected][hezb]['q1']['from_surah']  ;
+			
+			document.getElementById("to_ayah").value = parts_dic[partSelected][hezb]['q4']['to_ayah']  ;
+			document.getElementById("to_surah").value = parts_dic[partSelected][hezb]['q4']['to_surah']  ;
+		}
+		
+		//alert(quarterSelected);
+		
+	
+    }
+	
+	
+
+  
+</script> 
+
+
+{% endblock %}	
+
+
+
+
+</body>
+</html>
